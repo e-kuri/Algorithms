@@ -28,38 +28,17 @@ public class Main {
         }
     }
 
-    private static List<Person> getPeopleFromFile(String filePath){
-        List<Person> people = new LinkedList<>();
-        try(FileInputStream fis = new FileInputStream(filePath);
-            BufferedReader br = new BufferedReader(new InputStreamReader(fis))){
-
-            String strLine;
-
-            while ((strLine = br.readLine()) != null)   {
-                people.add(new Person(strLine));
-            }
-
-        }catch (FileNotFoundException ffe){
-            System.out.println("File not found");
-        }catch (IOException e){
-            System.out.printf("There was an error reading the file");
-        }
-        return people;
+    interface InputFileProcessor{
+        void processLine(String line);
     }
 
-    private static void setPreferencesFromFile(String preferencesPath, Map<String, MatchingOption> preferenceOptions,
-                                               Map<String, MatchingOption> choosers){
-        try(FileInputStream fis = new FileInputStream(preferencesPath);
+    private static void processInputFile(String path, InputFileProcessor ifp){
+        try(FileInputStream fis = new FileInputStream(path);
             BufferedReader br = new BufferedReader(new InputStreamReader(fis))){
 
             String strLine;
             while ((strLine = br.readLine()) != null)   {
-               String[] content = strLine.split("\\s*,\\s*");
-               List<MatchingOption> preferences = new LinkedList<>();
-               for(int i=1; i<content.length; i++){
-                    preferences.add(preferenceOptions.get(content[i]));
-               }
-               choosers.get(content[0]).setPreferences(preferences);
+                ifp.processLine(strLine);
             }
 
         }catch (FileNotFoundException ffe){
@@ -75,15 +54,24 @@ public class Main {
                                                             String selectedPreferencesFile){
         Map<String, MatchingOption> selectorsMap = new HashMap<>();
         Map<String, MatchingOption> selectedMap = new HashMap<>();
-        for(Person p : getPeopleFromFile(selectorsFile)){
-            selectorsMap.put(p.getName(), new MatchingOption(p));
-        }
-        for(Person p : getPeopleFromFile(selectedFile)){
-            selectedMap.put(p.getName(), new MatchingOption(p));
-        }
-        setPreferencesFromFile(selectedPreferencesFile, selectorsMap, selectedMap);
-        setPreferencesFromFile(selectorPreferencesFile, selectedMap, selectorsMap);
-
+        processInputFile(selectorsFile, line -> selectorsMap.put(line, new MatchingOption(new Person(line)) ));
+        processInputFile(selectedFile, line -> selectedMap.put(line, new MatchingOption(new Person(line)) ));
+        processInputFile(selectorPreferencesFile, line -> {
+            String[] content = line.split("\\s*,\\s*");
+            List<MatchingOption> preferences = new LinkedList<>();
+            for(int i=1; i<content.length; i++){
+                preferences.add(selectedMap.get(content[i]));
+            }
+            selectorsMap.get(content[0]).setPreferences(preferences);
+        });
+        processInputFile(selectedPreferencesFile, line -> {
+            String[] content = line.split("\\s*,\\s*");
+            List<MatchingOption> preferences = new LinkedList<>();
+            for(int i=1; i<content.length; i++){
+                preferences.add(selectorsMap.get(content[i]));
+            }
+            selectedMap.get(content[0]).setPreferences(preferences);
+        });
         return new LinkedList<>(selectorsMap.values());
     }
 
@@ -97,10 +85,6 @@ public class Main {
             e.printStackTrace();
         }
         printMatches(selectors);
-    }
-
-    private static void setPreferences(MatchingOption option, MatchingOption ...preferences){
-        option.setPreferences(new LinkedList<>(Arrays.asList(preferences)));
     }
 
     private static void printMatches(List<MatchingOption> selector){
