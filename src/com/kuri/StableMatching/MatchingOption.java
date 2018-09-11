@@ -1,59 +1,70 @@
 package com.kuri.StableMatching;
 
 import com.kuri.exception.NoMorePreferencesException;
+import com.kuri.exception.PreferencesNotInitializedException;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 public class MatchingOption<T> {
     private T candidate;
     private List<MatchingOption> preferences;
-    private int currentPreferenceIndex;
     private MatchingOption currentMatch;
+    ListIterator<MatchingOption> preferenceItrator;
 
     public MatchingOption(T candidate, List<MatchingOption> preferences){
         this.candidate = candidate;
         this.preferences = preferences;
-        this.currentPreferenceIndex = 0;
+        this.preferenceItrator = preferences.listIterator();
     }
 
     public MatchingOption(T candidate){
-        this(candidate, new LinkedList<MatchingOption>());
+        this.candidate = candidate;
     }
 
-    public void addPreference(MatchingOption preference){
-        this.preferences.add(preference);
+    public void setPreferences(List<MatchingOption> preferences){
+        this.preferences = preferences;
+        this.preferenceItrator = preferences.listIterator();
     }
 
-    public void addPreference(MatchingOption preference, int possition){
-        if(possition <= this.preferences.size()){
-            this.preferences.add(possition, preference);
-        }else{
-            addPreference(preference);
+    public boolean hasNextPreference() throws PreferencesNotInitializedException {
+        if(preferenceItrator == null){
+            throw new PreferencesNotInitializedException();
         }
+        return preferenceItrator.hasNext();
     }
 
-    public boolean hasNextPreference(){
-        return currentPreferenceIndex < preferences.size();
-    }
-
-    public MatchingOption getNextPreference() throws NoMorePreferencesException {
-        if(currentPreferenceIndex < preferences.size()){
-            return preferences.get(currentPreferenceIndex++);
+    public MatchingOption getNextPreference() throws NoMorePreferencesException, PreferencesNotInitializedException {
+        if(preferenceItrator == null){
+            throw new PreferencesNotInitializedException();
+        }
+        if(preferenceItrator.hasNext()){
+            return preferenceItrator.next();
         }else{
             throw new NoMorePreferencesException();
         }
     }
 
-    public boolean isBestMatch(MatchingOption candidate){
+    public boolean isBetterMatch(MatchingOption candidate) throws PreferencesNotInitializedException {
+        if(preferenceItrator == null){
+            throw new PreferencesNotInitializedException();
+        }
         if(!hasMatch()){
             return true;
         }
-        int index = 0;
-        while(index < preferences.size() && preferences.get(index) != currentMatch && preferences.get(index) != candidate ){
-            index++;
+        Iterator<MatchingOption> it = preferences.iterator();
+        MatchingOption current;
+        while(it.hasNext()){
+            current = it.next();
+            if(current == candidate){
+                return true;
+            }else if(current == currentMatch){
+                return false;
+            }
         }
-        return preferences.get(index) == candidate;
+        return false;
     }
 
     public void unmatch(){
