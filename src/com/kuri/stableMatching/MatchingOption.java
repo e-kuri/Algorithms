@@ -1,10 +1,9 @@
-package com.kuri.StableMatching;
+package com.kuri.stableMatching;
 
 import com.kuri.exception.NoMorePreferencesException;
 import com.kuri.exception.PreferencesNotInitializedException;
 
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 

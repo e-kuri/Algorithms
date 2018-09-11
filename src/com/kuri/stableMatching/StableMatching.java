@@ -1,4 +1,4 @@
-package com.kuri.StableMatching;
+package com.kuri.stableMatching;
 
 import com.kuri.exception.NoMorePreferencesException;
 import com.kuri.exception.PreferencesNotInitializedException;
