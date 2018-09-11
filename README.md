@@ -26,6 +26,8 @@ To run the algorithm, you must update the input files located in the TestCases d
   - The rest of the list contains the ordered identifier of the preferences that this entity will hold. Each of these identifiers should match a "selected" entity, set in the selected.txt file.
   
   Once compiled, run it from command line with the collowing instruction:
-  ```java com/kuri/Main <selectors_path> <selected_path> <selectors_preferences_path> <selected_preferences_path>```
+  ```
+  java com/kuri/Main <selectors_path> <selected_path> <selectors_preferences_path> <selected_preferences_path>
+  ```
   
   You can use any input files to test different scenarios, as long as they have the same structure than the included in this example.
